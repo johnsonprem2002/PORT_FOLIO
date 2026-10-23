@@ -22,3 +22,9 @@ Then visit `http://localhost:8000`.
 3. In the repository, open **Settings → Pages**.
 4. Select **Deploy from a branch**, choose `main` and `/ (root)`, then save.
 5. Wait for GitHub Pages to publish the site. The resume download link is served from `assets/Johnson-Prem-B-Resume.pdf`.
+
+
+### Hero and galaxy updates
+- Added the supplied CAD software collage as the hero image.
+- Hero image gently floats and tilts with cursor movement.
+- Galaxy canvas remains fixed in one viewport location while stars twinkle subtly; it does not follow the cursor or scroll.

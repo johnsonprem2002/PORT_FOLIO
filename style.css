@@ -109,3 +109,37 @@ body{position:relative;isolation:isolate}
 #ambient{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block;opacity:.55}
 body>header,body>main,body>.modal,body>.footer{position:relative;z-index:1}
 body>.grain{z-index:2;pointer-events:none}
+
+
+/* White portfolio theme and moving hero visual */
+:root{--bg:#fff;--panel:#fff;--text:#172126;--muted:#68777c;--line:rgba(23,33,38,.13);--mint:#168a67;--orange:#d87925}
+body{background:#fff;color:#172126}
+.topbar{background:rgba(255,255,255,.88);border-bottom-color:rgba(23,33,38,.12)}
+.nav a,.text-link{color:#53636a}
+.brand{color:#172126}.brand small{color:#68777c}
+.hero-card{background:linear-gradient(145deg,#fff,#f7faf9);border:1px solid rgba(23,33,38,.13);box-shadow:0 28px 80px rgba(23,33,38,.12);transform:perspective(1000px) rotateX(var(--hero-tilt-x,0deg)) rotateY(var(--hero-tilt-y,0deg));transition:transform .22s ease-out}
+.card-top,.card-bottom{color:#627178}
+.hero-image-wrap{height:290px;padding:10px 16px;overflow:hidden}
+.hero-cad-image{display:block;width:100%;height:100%;object-fit:contain;background:#fff;border-radius:12px;animation:heroImageFloat 6.5s ease-in-out infinite;transform-origin:center}
+@keyframes heroImageFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-7px) scale(1.012)}}
+.orbit{border-color:rgba(22,138,103,.13)}
+.visual-tag{color:#68777c}.visual-tag span{color:#168a67}.scroll-cue{color:#68777c}
+.project-card,.project-image,.project-info{background:#fff}
+.project-card{border-color:rgba(23,33,38,.13);box-shadow:0 12px 38px rgba(23,33,38,.055)}
+.project-info h3,.section-title,.hero h1{color:#172126}
+.project-info p,.section-intro{color:#5b6a70}
+#ambient{position:fixed;inset:0;z-index:0;opacity:.42;pointer-events:none}
+.topbar,main,footer,.ticker,.modal{position:relative;z-index:1}
+#scroll-progress{z-index:50}
+@media(max-width:700px){.hero-image-wrap{height:250px;padding:8px}.hero-cad-image{animation-duration:8s}}
+@media(prefers-reduced-motion:reduce){.hero-cad-image{animation:none}.hero-card{transition:none}}
+
+/* Project details open as an overlay dialog, never as content at the page bottom. */
+.modal{position:fixed!important;inset:0;z-index:120!important;display:none;align-items:center;justify-content:center;padding:clamp(12px,3vw,28px)}
+.modal.open{display:flex!important}
+.modal-panel{position:relative;width:min(900px,100%);max-height:min(90dvh,900px);overflow:auto;overscroll-behavior:contain;border-radius:18px;padding:clamp(22px,4vw,46px)}
+.modal-close{position:sticky;float:right;top:0;z-index:3;margin:-8px -8px 0 12px;width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.92);box-shadow:0 2px 12px rgba(20,35,30,.08)}
+.modal-content{clear:both}
+.modal-image{display:block;width:100%;max-height:430px;object-fit:contain;border-radius:12px;margin:24px 0;background:#f5f8f6}
+@media(max-width:640px){.modal{padding:10px}.modal-panel{max-height:94dvh;padding:20px}.modal-image{max-height:280px}}
+@media(prefers-reduced-motion:reduce){.modal-panel{scroll-behavior:auto}}

@@ -33,6 +33,7 @@
   const search = document.querySelector('#project-search');
   const count = document.querySelector('#visible-project-count');
   let activeFilter = 'all';
+  let lastProjectTrigger = null;
 
   // Category totals are computed from the project data, not manually maintained.
   filters.forEach(button => {
@@ -70,6 +71,7 @@
   function openProject(id) {
     const card = cards.find(item => item.dataset.project === id);
     if (!card || !modal || !content) return;
+    lastProjectTrigger = document.activeElement;
     const title = card.querySelector('h3')?.textContent || 'Project';
     const type = card.querySelector('.project-type')?.textContent || 'CAD PROJECT';
     const image = card.querySelector('img')?.getAttribute('src') || '';
@@ -77,6 +79,8 @@
       content.innerHTML = `<div class="eyebrow">${type}</div><h2 id="modal-title">${title}</h2><p class="modal-lead">${lead}</p><img class="modal-image" src="${image}" alt="${title}"><div class="modal-tags"><span>CAD MODELLING</span><span>DESIGN EXPLORATION</span><span>ENGINEERING VISUALISATION</span></div><h3>Project overview</h3><p>${lead}</p><h3>Design focus</h3><p>This project explores component geometry, assembly relationships, and clear engineering visualisation. The displayed model or drawing is the visual reference for this project.</p><h3>Skills shown</h3><p>3D CAD modelling, mechanical design thinking, and technical presentation.</p><a class="button button-primary" href="mailto:johnsonprem2002@gmail.com?subject=${encodeURIComponent('Portfolio enquiry: ' + title)}">Discuss this project <span>↗</span></a>`;
     modal.classList.add('open');
     modal.setAttribute('aria-hidden', 'false');
+    const panel = modal.querySelector('.modal-panel');
+    if (panel) panel.scrollTop = 0;
     document.body.style.overflow = 'hidden';
     modal.querySelector('.modal-close')?.focus();
   }
@@ -84,6 +88,7 @@
     modal?.classList.remove('open');
     modal?.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
+    lastProjectTrigger?.focus?.();
   }
   document.querySelectorAll('[data-open]').forEach(button => button.addEventListener('click', () => openProject(button.dataset.open)));
   document.querySelectorAll('.project-card .project-image').forEach(button => button.addEventListener('click', () => openProject(button.closest('.project-card').dataset.project)));
@@ -130,12 +135,31 @@
     });
   }
 
-  // Cursor-reactive galaxy field: soft nebula, spiral arms, and drifting stars.
+  
+  // Hero visual responds to cursor movement; galaxy remains fixed behind it.
+  const heroCard = document.querySelector('.hero-card');
+  if (heroCard && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    heroCard.addEventListener('pointermove', event => {
+      if (event.pointerType === 'touch') return;
+      const rect = heroCard.getBoundingClientRect();
+      const nx = (event.clientX - rect.left) / rect.width - .5;
+      const ny = (event.clientY - rect.top) / rect.height - .5;
+      heroCard.style.setProperty('--hero-tilt-x', `${-ny * 5}deg`);
+      heroCard.style.setProperty('--hero-tilt-y', `${nx * 7}deg`);
+    });
+    heroCard.addEventListener('pointerleave', () => {
+      heroCard.style.setProperty('--hero-tilt-x', '0deg');
+      heroCard.style.setProperty('--hero-tilt-y', '0deg');
+    });
+  }
+
+  // Fixed-position galaxy field: soft nebula, spiral arms, and drifting stars.
   const canvas = document.querySelector('#ambient');
   const ctx = canvas?.getContext('2d');
   if (!ctx) return;
-  let w = 0, h = 0, dpr = 1, frame = 0, time = 0, scrollAmount = 0;
-  const pointer = { x: innerWidth * .72, y: innerHeight * .28, tx: innerWidth * .72, ty: innerHeight * .28 };
+  let w = 0, h = 0, dpr = 1, frame = 0, time = 0;
+  // Galaxy is anchored to one stable viewport position.
+  const galaxyAnchor = { x: innerWidth * .72, y: innerHeight * .42 };
   let stars = [];
   const galaxyReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function resize() {
@@ -150,31 +174,18 @@
       return { arm, radius, angle, size: Math.random() * 1.45 + .25, alpha: Math.random() * .32 + .1, twinkle: Math.random() * 6 };
     });
   }
-  window.addEventListener('pointermove', event => {
-    if (event.pointerType === 'touch') return;
-    pointer.tx = event.clientX; pointer.ty = event.clientY;
-  }, { passive: true });
-  function updateGalaxyScroll() {
-    const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-    scrollAmount = Math.min(1, Math.max(0, window.scrollY / maxScroll));
-  }
-  window.addEventListener('scroll', updateGalaxyScroll, { passive: true });
-  updateGalaxyScroll();
-
   function draw() {
     if (document.hidden) { frame = 0; return; }
     ctx.clearRect(0, 0, w, h);
-    pointer.x += (pointer.tx - pointer.x) * .045;
-    pointer.y += (pointer.ty - pointer.y) * .045;
     time += .003;
     const radius = Math.min(w, h) * .48;
-    const nebula = ctx.createRadialGradient(pointer.x, pointer.y, 0, pointer.x, pointer.y, radius);
+    const nebula = ctx.createRadialGradient(galaxyAnchor.x, galaxyAnchor.y, 0, galaxyAnchor.x, galaxyAnchor.y, radius);
     nebula.addColorStop(0, 'rgba(116, 91, 210, .075)');
     nebula.addColorStop(.28, 'rgba(75, 160,220, .052)');
     nebula.addColorStop(.62, 'rgba(11,143,104, .026)');
     nebula.addColorStop(1, 'rgba(255,255,255,0)');
     ctx.fillStyle = nebula; ctx.fillRect(0, 0, w, h);
-    ctx.save(); ctx.translate(pointer.x, pointer.y); ctx.rotate(time * .22 + scrollAmount * 1.8);
+    ctx.save(); ctx.translate(galaxyAnchor.x, galaxyAnchor.y); ctx.rotate(time * .08);
     for (let arm = 0; arm < 4; arm++) {
       ctx.beginPath();
       for (let n = 0; n <= 100; n++) {
@@ -192,12 +203,11 @@
     ctx.fillStyle = core; ctx.beginPath(); ctx.arc(0, 0, Math.min(w, h) * .12, 0, Math.PI * 2); ctx.fill();
     stars.forEach(star => {
       const a = star.angle + time * (.04 + star.arm * .003);
-      const driftScale = 1 + scrollAmount * .055;
-      const x = Math.cos(a) * star.radius * driftScale;
-      const y = Math.sin(a) * star.radius * .72 * driftScale;
+      const x = Math.cos(a) * star.radius;
+      const y = Math.sin(a) * star.radius * .72;
       const twinkle = .72 + Math.sin(time * 2 + star.twinkle) * .28;
       ctx.beginPath(); ctx.arc(x, y, star.size, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(67, 91, 142, ${star.alpha * twinkle * (1 + scrollAmount * .22)})`; ctx.fill();
+      ctx.fillStyle = `rgba(67, 91, 142, ${star.alpha * twinkle})`; ctx.fill();
     });
     ctx.restore();
     if (!galaxyReduceMotion) frame = requestAnimationFrame(draw);
